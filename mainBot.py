@@ -62,7 +62,7 @@ while True:
 					qwe = qwe + i + '\n'
 				with open(emList,'w') as a:
 					a.write(qwe)
-				msg.reply("You've been removed from the message list!\n\nIf you want to be removed, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)")
+				msg.reply("You've been removed from the message list!\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)")
 				print('Replied to user.')
 			except ValueError:
 				print('Not on list.')
