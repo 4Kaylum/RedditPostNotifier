@@ -94,7 +94,7 @@ while True:
 		print('Marked.\n')
 
 	## Sleeps so the bot isn't timed out and banned by Reddit
-	print('Sleeping for 10 seconds...\n')
-	time.sleep(10)
+	print('Sleeping for 30 seconds...\n')
+	time.sleep(30)
 
 # r.send_message('user', 'Subject Line', 'You are awesome!')
