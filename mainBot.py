@@ -59,10 +59,13 @@ while True:
 				print("    Not on list. Aborting.")
 				msg.reply(alreadyLeft)
 
+		print("Marking message as read.")
+		msg.mark_as_read()
+
 	if changeFlag:
 		print("\nWriting changes to file.")
 		writeToFile(currentUsers, emList)
 
-	print("Sleeping for 30 seconds.")
+	print("\nSleeping for 30 seconds.")
 	time.sleep(30)
 
