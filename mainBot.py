@@ -40,11 +40,13 @@ while True:
 			print("    Identified :: ADD :: {}".format(msg.author.name))
 			if msg.author.name in currentUsers:
 				print("    Already on list. Aborting.")
+				print("    Sending message.")
 				msg.reply(alreadyJoined)
 			else:
 				print("    Not on list. Adding.")
 				changeFlag = True
 				currentUsers.append(msg.author.name)
+				print("    Sending message.")
 				msg.reply(justJoined)
 
 		## Checks to rem from the list
@@ -54,13 +56,15 @@ while True:
 				print("    Already on list. Removing.")
 				changeFlag = True
 				currentUsers.remove(msg.author.name)
+				print("    Sending message.")
 				msg.reply(justLeft)
 			else:
 				print("    Not on list. Aborting.")
+				print("    Sending message.")
 				msg.reply(alreadyLeft)
 
 		## Checks to send out message
-		if checkStartWith(ms, '[send message]'):
+		if checkStartWith(msg, '[send message]'):
 			print("    Identified :: SEND MESSAGE :: {}".format(msg.author.name))
 			if str(msg.author.name) in ['SatanistSnowflake', 'Doomchicken7']:
 				print("    Author allowed. Sending messages out.")
