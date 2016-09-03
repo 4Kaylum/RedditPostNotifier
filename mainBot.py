@@ -59,6 +59,17 @@ while True:
 				print("    Not on list. Aborting.")
 				msg.reply(alreadyLeft)
 
+		## Checks to send out message
+		if checkStartWith(ms, '[send message]'):
+			print("    Identified :: SEND MESSAGE :: {}".format(msg.author.name))
+			if str(msg.author.name) in ['SatanistSnowflake', 'Doomchicken7']:
+				print("    Author allowed. Sending messages out.")
+				for i in currentUsers:
+					print("        Sending message :: {}".format(i))
+					r.send_message(i,"New Magic Muggle chapter!","Check it out! \n\n/r/MagicMuggle")
+			else:
+				print("    Author not allowed. Aborting.")
+
 		print("Marking message as read.")
 		msg.mark_as_read()
 
