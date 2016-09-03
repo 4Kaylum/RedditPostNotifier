@@ -21,6 +21,3 @@ def getFileList(filename):
 				del ret[i]
 	return ret 
 
-
-def thing():
-	pass	
