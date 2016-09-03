@@ -13,7 +13,7 @@ r = praw.Reddit(user_agent="A bot to email out when there's a new chapter to Mag
 print('Logging in...')
 o = OAuth2Util.OAuth2Util(r)
 o.refresh(force=True)
-print('Logged in.\n')
+print('Logged in.')
 
 justJoined    = "You've been added to the message list!\n\nIf you want to be removed, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[REMOVE]&message=User list user update.)"
 justLeft      = "You've been removed from the message list!\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)"
@@ -26,7 +26,7 @@ while True:
 	changeFlag = False
 
 	## Go through unread messages.
-	print('Going through messages...')
+	print('\nGoing through messages...')
 	for msg in r.get_unread(limit=None):
 
 		## Print the subject to console.
