@@ -63,6 +63,6 @@ while True:
 		print("\nWriting changes to file.")
 		writeToFile(currentUsers, emList)
 
-	print()
+	print("Sleeping for 30 seconds.")
 	time.sleep(30)
 
