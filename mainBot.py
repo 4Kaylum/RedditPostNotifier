@@ -70,7 +70,8 @@ while True:
 				print("    Author allowed. Sending messages out.")
 				for i in currentUsers:
 					print("        Sending message :: {}".format(i))
-					r.send_message(i,"New Magic Muggle chapter!","Check it out! \n\n/r/MagicMuggle")
+					# r.send_message(i,"New Magic Muggle chapter!","Check it out! \n\n/r/MagicMuggle")
+					r.send_message(i, msg.body)
 			else:
 				print("    Author not allowed. Aborting.")
 
