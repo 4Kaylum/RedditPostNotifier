@@ -19,6 +19,7 @@ justJoined    = "You've been added to the message list!\n\nIf you want to be rem
 justLeft      = "You've been removed from the message list!\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)"
 alreadyJoined = "You're already on the message list! You silly :3\n\nIf you want to be removed, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[REMOVE]&message=User list user update.)"
 alreadyLeft   = "You're not on the message list! You silly :3\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)"
+disclaimer    = "\n\n---\n\nI am a bot, *bleep, bloop.*  \nThis message was sent at the request of an authorized sender for the subreddit you signed up for. All body text apart from this disclaimer was written by them.\n\n[Author](/u/SatanistSnowflake) :: [Git](https://github.com/4Kaylum/RedditPostNotifier)"
 
 ## Main event loop
 while True:
@@ -71,7 +72,7 @@ while True:
 				for i in currentUsers:
 					print("        Sending message :: {}".format(i))
 					# r.send_message(i,"New Magic Muggle chapter!","Check it out! \n\n/r/MagicMuggle")
-					r.send_message(i, msg.body)
+					r.send_message(i, "New Magic Muggle chapter!", msg.body + '\n\n' + disclaimer)
 			else:
 				print("    Author not allowed. Aborting.")
 
