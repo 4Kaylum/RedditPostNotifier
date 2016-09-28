@@ -7,7 +7,7 @@ from postNotifierTools import *
 ## Set some constants
 print('Opened.')
 emList = os.path.dirname(os.path.realpath(__file__)) + '\\emailList.txt'
-r = praw.Reddit(user_agent="A bot to email out when there's a new chapter to Magic Muggle")
+r = praw.Reddit(user_agent="A user to message out to a list of [registered] when there's a new chapter to Magic Muggle - /u/SatanistSnowflake")
 
 ## Auth the bot to /u/magicSquib
 print('Logging in...')
@@ -19,7 +19,7 @@ justJoined    = "You've been added to the message list!\n\nIf you want to be rem
 justLeft      = "You've been removed from the message list!\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)"
 alreadyJoined = "You're already on the message list! You silly :3\n\nIf you want to be removed, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[REMOVE]&message=User list user update.)"
 alreadyLeft   = "You're not on the message list! You silly :3\n\nIf you want to be added, [click here!](https://www.reddit.com/message/compose/?to=magicSquib&subject=[ADD]&message=User list user update.)"
-disclaimer    = "\n\n---\n\nI am a bot, *bleep, bloop.*  \nThis message was sent at the request of an authorized sender for the subreddit you signed up for. All body text apart from this disclaimer was written by them.\n\n[Author](/u/SatanistSnowflake) :: [Git](https://github.com/4Kaylum/RedditPostNotifier)"
+disclaimer    = "\n\n---\n\n^^I ^^am ^^a ^^bot, ^^*bleep, ^^bloop.* ^^All ^^body ^^text ^^apart ^^from ^^this ^^disclaimer ^^was ^^written ^^by ^^{}.  \n^^[Author](/u/SatanistSnowflake) ^^:: ^^[Git](https://github.com/4Kaylum/RedditPostNotifier)"
 
 ## Main event loop
 while True:
@@ -71,8 +71,33 @@ while True:
 				print("    Author allowed. Sending messages out.")
 				for i in currentUsers:
 					print("        Sending message :: {}".format(i))
-					# r.send_message(i,"New Magic Muggle chapter!","Check it out! \n\n/r/MagicMuggle")
-					r.send_message(i, "New Magic Muggle chapter!", msg.body + '\n\n' + disclaimer)
+					r.send_message(i, "New Magic Muggle chapter!", msg.body + '\n\n' + disclaimer.format(str(msg.author.name)))
+			else:
+				print("    Author not allowed. Aborting.")
+
+		## Checks to post a comment
+		if checkStartWith(msg, '[comment]'):
+			print("    Identified :: COMMENT :: {}".format(msg.author.name))
+			if str(msg.author.name) in ['SatanistSnowflake']:
+				print("    Author allowed. Proceeding to make comment.")
+
+				## Split the ID of the comment to respond to and the text
+				commentMake = msg.body.split('\n\n',1)
+				toCommentOn = r.get_submission(url=commentMake[0])
+				try:
+					toCommentOn = toCommentOn.comments[0]
+				except:
+					pass
+				toCommentWith = commentMake[1]
+
+				if type(toCommentOn) == praw.objects.Comment:
+					print("    Identified ID. Comment.\nPosting.")
+					toCommentOn.reply(toCommentWith)
+				elif type(toCommentOn) == praw.objects.Submission:
+					print("    Identified ID. Submission.\nPosting.")
+					toCommentOn.add_comment(toCommentWith)
+				else:
+					print("    ID was invalid. Aborting.")
 			else:
 				print("    Author not allowed. Aborting.")
 
