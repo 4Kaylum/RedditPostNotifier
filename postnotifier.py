@@ -26,6 +26,7 @@ class PostNotifier:
 		self.w = userDirectory
 		self.locate = lambda x: self.w + '/' + x + '.json'
 		self.ownerNames = ['SatanistSnowflake']
+		self.iteration = 0
 
 				
 		# Set up which actions can be run
@@ -53,11 +54,13 @@ class PostNotifier:
 		# Start a loop so you'll run forever
 		while True:
 
+			self.iteration += 1
+
 			# Put in a try so you can catch timeouts
 			try:
 
 				# Check the inbox
-				print('Checking inbox...')
+				print('{} Checking inbox...'.format(str(hex(self.iteration))[2:]))
 				self.justActed = False
 				self.checkInbox()
 
