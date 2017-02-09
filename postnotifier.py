@@ -73,9 +73,8 @@ class PostNotifier:
 
 				# Just sleep for longer I guess
 				print('Sleeping for {} due to timeout'.format(timeoutDelay))
-				print('    {}'.format(e))
+				print('\t{}'.format(e))
 				sleep(timeoutDelay)
-
 
 	def checkInbox(self):
 		'''
@@ -132,7 +131,7 @@ class PostNotifier:
 					print('\tInvalid action :: Replying to user and aborting thread')
 					try:
 						msg.reply(responses.INVALIDMESSAGETOBOT)
-					except Exception as e:
+					except self.userDoesntExist as e:
 						pass
 					return
 
@@ -183,6 +182,12 @@ class PostNotifier:
 			msg.reply(responses.ADDEDTOMAILINGLIST.format(subreddit))
 		except self.userDoesntExist as e:
 			pass
+
+		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'User Added To {}'.format(subreddit), 'fields':[
+				{
+					'name': msg.author
+				}
+			]}])
 
 	def removeFromMailingList(self, subreddit:str, msg:praw.models.Message):
 		'''
@@ -242,6 +247,12 @@ class PostNotifier:
 		except self.userDoesntExist as e:
 			pass
 
+		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'User Removed From {}'.format(subreddit), 'fields':[
+				{
+					'name': msg.author
+				}
+			]}])
+
 	def sendToMailingList(self, subreddit:str, msg:praw.models.Message):
 		'''
 		This is the first command that requires authentication
@@ -265,10 +276,7 @@ class PostNotifier:
 
 		# Get the server moderators
 		print('\t\tGenerating list of moderators for the subreddit')
-		subredditObj = self.reddit.subreddit(subreddit)
-		subredditModObj = subredditObj.moderator
-		moderatorList = list(subredditModObj)
-		moderatorNames = [i.name for i in moderatorList]
+		moderatorNames = self.getModerators(subreddit)
 
 		# See if the user is in the moderator list
 		if author not in moderatorNames:
@@ -304,10 +312,13 @@ class PostNotifier:
 		# Get the format ready for the messages - get subject
 		subjectMsg = msg.subject[len(msg.subject.split('::')[0]) + len(subreddit) + 2:]
 		while True:
-			if subjectMsg[0] == ' ':
-				subjectMsg = subjectMsg[1:]
-			else:
-				break
+			try:
+				if subjectMsg[0] == ' ':
+					subjectMsg = subjectMsg[1:]
+				else:
+					break
+			except IndexError:
+				subjectMsg = 'None'
 		subject = 'UPDATE FROM {} :: {}'.format(subreddit.upper(), subjectMsg)
 
 		# Get body text
@@ -335,6 +346,151 @@ class PostNotifier:
 
 		print('\t\tFinished sending out messages to {} user(s)'.format(counter))
 
+		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'Message Sent From {}'.format(subreddit), 'fields':[
+				{
+					'name': 'Message Sendout Response', 
+					'value': 'The message has been successfully sent out to {} user(s).'.format(counter), 
+					'inline': False
+				}, {
+					'name': subject,
+					'value': body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author),
+					'inline': False
+				}
+			]}])
 
-	def postAComment(self, parentComment, msg):
+	def setDiscordWebhookForSubreddit(self, subreddit:str, msg:praw.models.Message):
+		'''
+		The bot will check if the message was sent by a moderator of the mentioned subreddit, 
+		and if it was it will store a given webhook from the body.
+
+		Messages should be sent with a subject of 'DISCORD::SUBREDDIT', and the body text is
+		the webhook from the channel.
+
+		Parameters :: 
+			subreddit : str
+				The name for the subreddit that is going to be worked on for this user
+			msg : praw.models.Message
+				The original message that was sent by the user
+		'''
+
+		print('\tValid action -> \n\t\tSetting up a Discord webhook for {}'.format(subreddit))
+
+		author = msg.author
+
+		# Get the server moderators
+		print('\t\tGenerating list of moderators for the subreddit')
+		moderatorNames = self.getModerators(subreddit)
+
+		# See if the user is in the moderator list
+		if author not in moderatorNames:
+
+			# They are not a moderator
+			print('\t\tUser not a moderator - responding and aborting')
+			try:
+				msg.reply(responses.NOTALLOWEDTOSEND.format(subreddit))
+			except self.userDoesntExist as e:
+				pass
+			return
+
+		# They are a moderator - tell the user that the messages will be sent out now
+		print('\t\tUser is a moderator - continuing')
+
+		# Get the messages to be sent to the user
+		try:
+			print('\t\tReading file...')
+			with open(self.locate(subreddit)) as a:
+				data = loads(a.read())
+				print('\t\tFile read successfully')
+		except:
+			print('\t\tFile not found - inventing values')
+			data = {'Users':[],'Discord Webhook':''}
+
+		# Make sure that the message author is in them
+		if author not in data['Users']:
+			print('\t\tAdding author to user list')
+			data['Users'] = [author] + data['Users']
+			with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
+
+		# Change the given Discord link
+		print('\t\tChanging the saved webhook link')
+		hook = msg.body
+		data['Discord Webhook'] = hook
+		with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
+
+		# Ping the webhook
+		z = postToDiscordViaWebhook(subreddit, embeds=[{'fields':[{'name':'Webhook Setup Ping', 'value':'This is the ping to make sure that the given webhook works properly.', 'inline':False}]}])
+
+		# Reply to the user
+		print('\t\tReply back to the user')
+		msg.reply(responses.DISCORDWEBHOOKMESSAGE.format(subreddit))
+
+	def getModerators(self, subreddit:str):
+		subredditObj = self.reddit.subreddit(subreddit)
+		subredditModObj = subredditObj.moderator
+		moderatorList = list(subredditModObj)
+		moderatorNames = [i.name for i in moderatorList]
+		return moderatorNames
+
+	def postToDiscordViaWebhook(self, subreddit:str, **kwargs):
+		'''
+		Posts a webhook to a subreddit, from a given link inside the stored data
+		Formats all inputs into an embed and posts it to the link
+
+		Parameters :: 
+			subreddit : str
+				The name of the subreddit being sent to
+			content
+			username
+			footer
+		'''
+
+		print('\t\tGenerating webhook to be sent')
+
+		content = kwargs.get('content', None)
+		username = kwargs.get('username', 'postNotifier')
+		footer = kwargs.get('footer', 'postNotifier on /u/magicSquib created by /u/SatanistSnowflake')
+		embeds = kwargs.get('embeds', None)
+
+		out = {'username':username}
+
+		if content == None:
+			pass
+		else:
+			out['content'] = content
+
+		if embeds == None:
+			pass
+		else:
+			for i in embeds:
+				i['footer'] = {'text':footer}
+			out['embeds'] = embeds
+
+		print('\t\tWebhook generated - reading link from file')
+
+		# Read the webhook from file
+		try:
+			print('\t\tReading file...')
+			with open(self.locate(subreddit)) as a:
+				data = loads(a.read())
+				print('\t\tFile read successfully')
+		except:
+			print('\t\tFile not found - inventing values')
+			data = {'Users':[],'Discord Webhook':''}
+
+		hook = data['Discord Webhook']
+		if hook == '':
+			print('\t\tNo webhook defined - aborting')
+			return
+
+		print('\t\tSending out webhook ping')
+		z = post(hook, json=out)
+
+		# Check the status code
+		if z.status_code in []:
+			print('\t\tSent out webhook successfully')
+		else:
+			print('\t\tWebhook ping failed')
+		return z
+
+	def postAComment(self, parentComment:str, msg:praw.models.Message):
 		pass

@@ -6,11 +6,12 @@ INVALIDMESSAGETOBOT = '''Sorry, but it looks like the message you sent is invali
 
 This bot has several actions, many of which ~~are pretty neat~~ can be seen below:
 
-Command|Example|Description
-:------|:------|:----------
-ADD|ADD::AskReddit|If you run this command, you will be added to the messaging list for a given subreddit, and will thus recieve a message when this subreddit sends out an update message.
-REMOVE|REMOVE::AskReddit|Running this command will remove you from a given subreddit's mailing list.
-SEND|SEND::AskReddit|This will send a message to everyone on the mailing list for the mentioned subreddit, with the first line of your body text being made the subject of the message. This will only work if you are a moderator of the subreddit you are mentioning.
+Command|Example Subject|Example Body|Description
+:------|:--------------|:-----------|:----------
+ADD|ADD::AskReddit||If you run this command, you will be added to the messaging list for a given subreddit, and will thus recieve a message when this subreddit sends out an update message.
+REMOVE|REMOVE::AskReddit||Running this command will remove you from a given subreddit's mailing list.
+SEND|SEND::AskReddit New Rules!|There has been a rules update. Check it out.|This will send a message to everyone on the mailing list for the mentioned subreddit, with the anything past the command in the subject being parsed as the subject for the output message. This will only work if you are a moderator of the subreddit you are mentioning.
+DISCORD|DISCORD::AskReddit|https://discordapp.com/api/webhooks/...|A Discord webhook link so that different updates will post into your Discord channel.
 
 This bot will not be able to parse a response to this message, so thus you will have to make a completely new message should you wish you correct any mistakes you made in sending this initially.
 
@@ -43,5 +44,15 @@ I apologise for any inconvenience.''' + BOTDISCLAIMERMESSAGE
 ABOUTTOBESENT = '''You are a moderator of the **{}** subreddit, and thus you are allowed to send a message to all of the signed up users for the subreddit. 
 
 This may take a while, so don't panic if you don't recieve a message immediately.
+
+Thank you for using postNotifier.''' + BOTDISCLAIMERMESSAGE
+
+# The ping back to the user when they set a new webhook for Discord
+# Formats :: subreddit name
+DISCORDWEBHOOKMESSAGE = '''You are a moderator of the **{}** subreddit, and thus you are allowed to run this command.
+
+Doing this will set and save a webhook that will be pinged with information when certain actions happen with the bot, such as when a message is sent or when a user signs up.
+
+A test ping has been sent out to the given webhook now. If you did not recieve anything, then please check and reset your webhook in the bot.
 
 Thank you for using postNotifier.''' + BOTDISCLAIMERMESSAGE
