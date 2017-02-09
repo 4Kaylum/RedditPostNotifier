@@ -45,7 +45,7 @@ ABOUTTOBESENT = '''You are a moderator of the **{}** subreddit, and thus you are
 
 This may take a while, so don't panic if you don't recieve a message immediately.
 
-Thank you for using postNotifier.''' + BOTDISCLAIMERMESSAGE
+Thank you for using PostNotifier.''' + BOTDISCLAIMERMESSAGE
 
 # The ping back to the user when they set a new webhook for Discord
 # Formats :: subreddit name
@@ -55,4 +55,4 @@ Doing this will set and save a webhook that will be pinged with information when
 
 A test ping has been sent out to the given webhook now. If you did not recieve anything, then please check and reset your webhook in the bot.
 
-Thank you for using postNotifier.''' + BOTDISCLAIMERMESSAGE
+Thank you for using PostNotifier.''' + BOTDISCLAIMERMESSAGE

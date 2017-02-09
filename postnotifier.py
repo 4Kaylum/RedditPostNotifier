@@ -37,7 +37,9 @@ class PostNotifier:
 			'DEL': self.removeFromMailingList,
 			'REM': self.removeFromMailingList,
 			'SEND': self.sendToMailingList,
-			'COMMENT': self.postAComment
+			'COMMENT': self.postAComment,
+			'DISCORD': self.setDiscordWebhookForSubreddit,
+			'WEBHOOK': self.setDiscordWebhookForSubreddit
 		}
 
 	def run(self, *, delay:int=30, timeoutDelay:int=120):
@@ -183,9 +185,11 @@ class PostNotifier:
 		except self.userDoesntExist as e:
 			pass
 
-		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'User Added To {}'.format(subreddit), 'fields':[
+		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
 				{
-					'name': msg.author
+					'name': 'User Added To {}'.format(subreddit),
+					'value': msg.author,
+					'inline': False
 				}
 			]}])
 
@@ -247,9 +251,11 @@ class PostNotifier:
 		except self.userDoesntExist as e:
 			pass
 
-		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'User Removed From {}'.format(subreddit), 'fields':[
+		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
 				{
-					'name': msg.author
+					'name': 'User Removed From {}'.format(subreddit),
+					'value': msg.author,
+					'inline': False
 				}
 			]}])
 
@@ -325,16 +331,18 @@ class PostNotifier:
 		body = msg.body
 
 		# Send the messages
-		counter = 0
+		counter = {'Success':0,'Deleted User':0,'Tries':0}
 		userRemovals = []
 		print('\t\tSending out to users now ->')
 		for person in data['Users']:
-			counter += 1
+			counter['Tries'] += 1
 			print('\t\t\t:: {}'.format(person))
 			try:
 				self.reddit.redditor(person).message(subject, body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author))
+				counter['Success'] += 1
 			except self.userDoesntExist as e:
 				userRemovals.append(person)
+				counter['Deleted User'] += 1
 
 		# Users have ceased to exist - remove them from the list
 		if userRemovals:
@@ -346,10 +354,18 @@ class PostNotifier:
 
 		print('\t\tFinished sending out messages to {} user(s)'.format(counter))
 
-		z = postToDiscordViaWebhook(subreddit, embeds=[{'title':'Message Sent From {}'.format(subreddit), 'fields':[
+		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'title':'Message Sent From {}'.format(subreddit), 'fields':[
 				{
-					'name': 'Message Sendout Response', 
-					'value': 'The message has been successfully sent out to {} user(s).'.format(counter), 
+					'name': 'Successful Message Sends', 
+					'value': counter['Success'],
+					'inline': True
+				}, {
+					'name': 'Unsuccessful Message Sends', 
+					'value': '{} (these are usually due to deleted accounts)'.format(counter['Deleted User']),
+					'inline': False
+				}, {
+					'name': 'Total Message Tries', 
+					'value': counter['Tries'],
 					'inline': False
 				}, {
 					'name': subject,
@@ -418,7 +434,13 @@ class PostNotifier:
 		with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
 
 		# Ping the webhook
-		z = postToDiscordViaWebhook(subreddit, embeds=[{'fields':[{'name':'Webhook Setup Ping', 'value':'This is the ping to make sure that the given webhook works properly.', 'inline':False}]}])
+		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
+				{
+					'name':'Webhook Setup Ping', 
+					'value':'This is the ping to make sure that the given webhook works properly.', 
+					'inline':False
+				}
+			]}])
 
 		# Reply to the user
 		print('\t\tReply back to the user')
@@ -428,7 +450,7 @@ class PostNotifier:
 		subredditObj = self.reddit.subreddit(subreddit)
 		subredditModObj = subredditObj.moderator
 		moderatorList = list(subredditModObj)
-		moderatorNames = [i.name for i in moderatorList]
+		moderatorNames = [i.name for i in moderatorList] + self.ownerNames
 		return moderatorNames
 
 	def postToDiscordViaWebhook(self, subreddit:str, **kwargs):
@@ -447,8 +469,8 @@ class PostNotifier:
 		print('\t\tGenerating webhook to be sent')
 
 		content = kwargs.get('content', None)
-		username = kwargs.get('username', 'postNotifier')
-		footer = kwargs.get('footer', 'postNotifier on /u/magicSquib created by /u/SatanistSnowflake')
+		username = kwargs.get('username', 'PostNotifier')
+		footer = kwargs.get('footer', 'PostNotifier on /u/magicSquib created by /u/SatanistSnowflake')
 		embeds = kwargs.get('embeds', None)
 
 		out = {'username':username}
@@ -486,10 +508,11 @@ class PostNotifier:
 		z = post(hook, json=out)
 
 		# Check the status code
-		if z.status_code in []:
+		if z.status_code in [200, 201, 204]:
 			print('\t\tSent out webhook successfully')
 		else:
 			print('\t\tWebhook ping failed')
+			print('\t\t{}'.format(z.text))
 		return z
 
 	def postAComment(self, parentComment:str, msg:praw.models.Message):
