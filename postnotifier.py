@@ -4,7 +4,6 @@ from requests import post
 from os import remove
 from time import sleep
 import responses
-from requests.exceptions import ConnectionError
 
 class PostNotifier:
 	'''
@@ -27,6 +26,7 @@ class PostNotifier:
 		self.locate = lambda x: self.w + '/' + x + '.json'
 		self.ownerNames = ['SatanistSnowflake']
 		self.iteration = 0
+		self.userDoesntExist = praw.exceptions.APIException
 
 				
 		# Set up which actions can be run
@@ -60,7 +60,7 @@ class PostNotifier:
 			try:
 
 				# Check the inbox
-				print('{} Checking inbox...'.format(str(hex(self.iteration))[2:]))
+				print('{} Checking inbox...'.format(str(hex(self.iteration))[2:].upper()))
 				self.justActed = False
 				self.checkInbox()
 
@@ -69,10 +69,11 @@ class PostNotifier:
 				sleep(delay)
 
 			# Catch timeouts
-			except ConnectionError:
+			except Exception as e:
 
 				# Just sleep for longer I guess
 				print('Sleeping for {} due to timeout'.format(timeoutDelay))
+				print('    {}'.format(e))
 				sleep(timeoutDelay)
 
 
@@ -102,7 +103,10 @@ class PostNotifier:
 
 				# The message is not valid, abort
 				print('\tInvalid action :: Replying to user and aborting thread\n')
-				msg.reply(responses.INVALIDMESSAGETOBOT)
+				try:
+					msg.reply(responses.INVALIDMESSAGETOBOT)
+				except self.userDoesntExist as e:
+					pass
 				return
 
 			else:
@@ -126,7 +130,10 @@ class PostNotifier:
 					# If you get here, the user tried to do something that the bot wasn't set up for
 					# Thus, tell them the response was invalid
 					print('\tInvalid action :: Replying to user and aborting thread')
-					msg.reply(responses.INVALIDMESSAGETOBOT)
+					try:
+						msg.reply(responses.INVALIDMESSAGETOBOT)
+					except Exception as e:
+						pass
 					return
 
 		# We have now gone through all of the messages in the inbox
@@ -154,7 +161,7 @@ class PostNotifier:
 			with open(self.locate(subreddit)) as a:
 				data = loads(a.read())
 				print('\t\tFile read successfully')
-		except:
+		except FileNotFoundError:
 			print('\t\tFile not found - inventing values')
 			data = {'Users':[],'Discord Webhook':''}
 
@@ -172,7 +179,10 @@ class PostNotifier:
 
 		# Respond to user
 		print('\t\tResponding to user')
-		msg.reply(responses.ADDEDTOMAILINGLIST.format(subreddit))
+		try:
+			msg.reply(responses.ADDEDTOMAILINGLIST.format(subreddit))
+		except self.userDoesntExist as e:
+			pass
 
 	def removeFromMailingList(self, subreddit:str, msg:praw.models.Message):
 		'''
@@ -197,7 +207,7 @@ class PostNotifier:
 			with open(self.locate(subreddit)) as a:
 				data = loads(a.read())
 				print('\t\tFile read successfully')
-		except:
+		except FileNotFoundError:
 			print('\t\tFile not found - inventing values')
 			data = {'Users':[msg.author],'Discord Webhook':''}
 
@@ -227,7 +237,10 @@ class PostNotifier:
 
 		# Respond to user
 		print('\t\tResponding to user')
-		msg.reply(responses.REMOVEDFROMMAILINGLIST.format(subreddit))
+		try:
+			msg.reply(responses.REMOVEDFROMMAILINGLIST.format(subreddit))
+		except self.userDoesntExist as e:
+			pass
 
 	def sendToMailingList(self, subreddit:str, msg:praw.models.Message):
 		'''
@@ -262,7 +275,10 @@ class PostNotifier:
 
 			# They are not a moderator
 			print('\t\tUser not a moderator - responding and aborting')
-			msg.reply(responses.NOTALLOWEDTOSEND.format(subreddit))
+			try:
+				msg.reply(responses.NOTALLOWEDTOSEND.format(subreddit))
+			except self.userDoesntExist as e:
+				pass
 			return
 
 		# They are a moderator - tell the user that the messages will be sent out now
@@ -299,11 +315,23 @@ class PostNotifier:
 
 		# Send the messages
 		counter = 0
+		userRemovals = []
 		print('\t\tSending out to users now ->')
 		for person in data['Users']:
 			counter += 1
 			print('\t\t\t:: {}'.format(person))
-			self.reddit.redditor(person).message(subject, body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author))
+			try:
+				self.reddit.redditor(person).message(subject, body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author))
+			except self.userDoesntExist as e:
+				userRemovals.append(person)
+
+		# Users have ceased to exist - remove them from the list
+		if userRemovals:
+			x = data['Users']
+			for i in userRemovals:
+				x.remove(i)
+			data['Users'] = x
+			with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
 
 		print('\t\tFinished sending out messages to {} user(s)'.format(counter))
 
