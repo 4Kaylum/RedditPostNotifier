@@ -368,11 +368,17 @@ class PostNotifier:
 					'value': counter['Tries'],
 					'inline': False
 				}, {
-					'name': subject,
-					'value': body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author),
+					'name': 'Author of Message', 
+					'value': author,
 					'inline': False
 				}
-			]}])
+			]}, {'fields':[
+				{
+					'name': subject,
+					'value': body,
+					'inline': False
+				}]}]
+			)
 
 	def setDiscordWebhookForSubreddit(self, subreddit:str, msg:praw.models.Message):
 		'''
@@ -436,7 +442,7 @@ class PostNotifier:
 		# Ping the webhook
 		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
 				{
-					'name':'Webhook Setup Ping', 
+					'name':'Webhook Setup Ping for {}'.format(subreddit), 
 					'value':'This is the ping to make sure that the given webhook works properly.', 
 					'inline':False
 				}
