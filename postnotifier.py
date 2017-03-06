@@ -108,7 +108,6 @@ class PostNotifier:
 					msg.reply(responses.INVALIDMESSAGETOBOT)
 				except self.userDoesntExist as e:
 					pass
-				return
 
 			else:
 
@@ -124,7 +123,6 @@ class PostNotifier:
 
 					# Run the action
 					self.runActions[actionForSub[0]](subRun.upper(), msg)
-					return
 					
 				except KeyError:
 
@@ -135,7 +133,6 @@ class PostNotifier:
 						msg.reply(responses.INVALIDMESSAGETOBOT)
 					except self.userDoesntExist as e:
 						pass
-					return
 
 		# We have now gone through all of the messages in the inbox
 		# Huzzah
