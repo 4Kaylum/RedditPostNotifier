@@ -21,3 +21,11 @@ You don't need to do anything special to set the bot up on your subreddit - just
 When users sign up or remove themselves from the mailing list, and when messages are sent out, the bot can send a POST request to a webhook, which is known to work with Discord. To send the bot a message that triggers a Discord webhook, send it a message with the subject `DISCORD::{}`, where `{}` is the name of the subreddit, and the body text of the message is the link to the webhook.
 
 And there ya go! That's all you need to know! c:
+
+## I think this is really cool!
+
+Woah! Me too! If you **really** like it, you can go follow me on [Twitter], or hit me up on [Patreon] or even just send me a one-off donation on [PayPal]! Anything's good, even nothing. Thank you for using my project ♥
+
+[Twitter]: https://twitter.com/4Kaylum
+[Patreon]: https://patreon.com/CallumBartlett
+[PayPal]: https://paypal.me/CalebBartlett

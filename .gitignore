@@ -1,4 +1,6 @@
 __pycache__/
 *.txt
+!requirements.txt
 praw.ini
 *.json
+*.sublime*
