@@ -23,7 +23,7 @@ class PostNotifier:
 
 		self.reddit = reddit
 		self.w = userDirectory
-		self.locate = lambda x: self.w + '/' + x + '.json'
+		self.locate = lambda x: self.w + '/Subreddits/' + x + '.json'
 		self.ownerNames = ['SatanistSnowflake']
 		self.iteration = 0
 		self.userDoesntExist = praw.exceptions.APIException
@@ -185,7 +185,7 @@ class PostNotifier:
 		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
 				{
 					'name': 'User Added To {}'.format(subreddit),
-					'value': msg.author,
+					'value': msg.author.name,
 					'inline': False
 				}
 			]}])
@@ -251,7 +251,7 @@ class PostNotifier:
 		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
 				{
 					'name': 'User Removed From {}'.format(subreddit),
-					'value': msg.author,
+					'value': msg.author.name,
 					'inline': False
 				}
 			]}])
@@ -366,7 +366,7 @@ class PostNotifier:
 					'inline': False
 				}, {
 					'name': 'Author of Message', 
-					'value': author,
+					'value': author.name,
 					'inline': False
 				}
 			]}, {'fields':[
@@ -476,7 +476,10 @@ class PostNotifier:
 		footer = kwargs.get('footer', 'PostNotifier on /u/magicSquib created by /u/SatanistSnowflake')
 		embeds = kwargs.get('embeds', None)
 
-		out = {'username':username}
+		try:
+			out = {'username': username.name}
+		except Exception:
+			out = {'username': str(username)}
 
 		if content == None:
 			pass
