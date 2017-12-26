@@ -1,5 +1,5 @@
 # Message to go at the bottom of all automated responses
-BOTDISCLAIMERMESSAGE = '''\n\n---\n\n^^I ^^am ^^a ^^bot, ^^*bleep*, ^^*bloop.* ^^This ^^action ^^was ^^performed ^^automatically.  \n^^[Author](/u/SatanistSnowflake) ^^:: ^^[Git](https://github.com/4Kaylum/RedditPostNotifier)'''
+BOTDISCLAIMERMESSAGE = '''\n\n---\n\n^^I ^^am ^^a ^^bot, ^^*bleep*, ^^*bloop.* ^^This ^^action ^^was ^^performed ^^automatically.  \n^^[Author](/u/SatanistSnowflake) ^^:: ^^[Git](https://github.com/4Kaylum/RedditPostNotifier) ^^:: ^^[Patreon](https://patreon.com/CallumBartlett)'''
 
 # Message to be sent when the bot is sent a message that isn't nicely formatted or made
 INVALIDMESSAGETOBOT = '''Sorry, but it looks like the message you sent is invalid.

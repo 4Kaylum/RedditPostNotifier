@@ -10,46 +10,46 @@ class PostNotifier:
 	Handles the whole postnotifier thingimawatsit
 	'''
 
-	def __init__(self, reddit:praw.Reddit, userDirectory:str):
+	def __init__(self, reddit:praw.Reddit, user_directory:str):
 		'''
 		The input args for this are the praw reddit feature.
 
 		Parameters :: 
 			reddit : praw.Reddit
 				The Praw reddit object used to send messages
-			userDirectory : str
+			user_directory : str
 				The directory for which all of the user data and webhook are going to be stored
 		'''
 
 		self.reddit = reddit
-		self.w = userDirectory
+		self.w = user_directory
 		self.locate = lambda x: self.w + '/Subreddits/' + x + '.json'
-		self.ownerNames = ['SatanistSnowflake']
+		self.owner_names = ['SatanistSnowflake']
 		self.iteration = 0
-		self.userDoesntExist = praw.exceptions.APIException
+		self.user_doesnt_exist = praw.exceptions.APIException
 
 				
 		# Set up which actions can be run
-		self.runActions = {
-			'ADD': self.addToMailingList,
-			'REMOVE': self.removeFromMailingList,
-			'DELETE': self.removeFromMailingList,
-			'DEL': self.removeFromMailingList,
-			'REM': self.removeFromMailingList,
-			'SEND': self.sendToMailingList,
-			'COMMENT': self.postAComment,
-			'DISCORD': self.setDiscordWebhookForSubreddit,
-			'WEBHOOK': self.setDiscordWebhookForSubreddit
+		self.run_actions = {
+			'ADD': self.add_to_mailing_list,
+			'REMOVE': self.remove_from_mailing_list,
+			'DELETE': self.remove_from_mailing_list,
+			'DEL': self.remove_from_mailing_list,
+			'REM': self.remove_from_mailing_list,
+			'SEND': self.send_to_mailing_list,
+			'COMMENT': self.post_a_comment,
+			'DISCORD': self.set_webhook_for_subreddit,
+			'WEBHOOK': self.set_webhook_for_subreddit
 		}
 
-	def run(self, *, delay:int=30, timeoutDelay:int=120):
+	def run(self, *, delay:int=30, timeout_delay:int=120):
 		'''
 		Call this to run all the featres of the bot on a loop
 
 		Parameters :: 
 			delay : int = 30
 				The delay at which all of the bot features will be run
-			timeoutDelay : int = 120
+			timeout_delay : int = 120
 				The sleeping time for when the bot recieves a connection error from the server
 		'''
 
@@ -63,8 +63,8 @@ class PostNotifier:
 
 				# Check the inbox
 				print('{} Checking inbox...'.format(str(hex(self.iteration))[2:].upper()))
-				self.justActed = False
-				self.checkInbox()
+				self.just_acted = False
+				self.check_inbox()
 
 				# Sleep
 				print('Sleeping for {}'.format(delay))
@@ -74,24 +74,22 @@ class PostNotifier:
 			except Exception as e:
 
 				# Just sleep for longer I guess
-				print('Sleeping for {} due to timeout'.format(timeoutDelay))
+				print('Sleeping for {} due to timeout'.format(timeout_delay))
 				print('\t{}'.format(e))
-				sleep(timeoutDelay)
+				sleep(timeout_delay)
 
-	def checkInbox(self):
+	def check_inbox(self):
 		'''
 		Checks the inbox of the user logged in and refers each post to a
-		respective handling function
-
-		Parameters :: N/A
+		respective handling function.
 		'''
 
 		# Get the messages into a list
-		inboxMessages = self.reddit.inbox.unread(mark_read=True)
-		inboxList = [i for i in inboxMessages if type(i) == praw.models.Message]
+		inbox_messages = self.reddit.inbox.unread(mark_read=True)
+		inbox_list = [i for i in inbox_messages if type(i) == praw.models.Message]
 
 		# Iterate through all of the messages
-		for msg in inboxList:
+		for msg in inbox_list:
 
 			# Print out to console
 			print('New message ->\n\tAuthor :: {0.author}\n\tSubject :: {0.subject}'.format(msg))
@@ -99,14 +97,14 @@ class PostNotifier:
 			msg.mark_read()
 
 			# Check that the message is valid
-			actionForSub = msg.subject.replace(' ','').upper().split('::')
-			if len(actionForSub) == 1 or '' in actionForSub:
+			action_for_subreddit = msg.subject.replace(' ','').upper().split('::')
+			if len(action_for_subreddit) == 1 or '' in action_for_subreddit:
 
 				# The message is not valid, abort
 				print('\tInvalid action :: Replying to user and aborting thread\n')
 				try:
 					msg.reply(responses.INVALIDMESSAGETOBOT)
-				except self.userDoesntExist as e:
+				except self.user_doesnt_exist as e:
 					pass
 
 			else:
@@ -116,13 +114,13 @@ class PostNotifier:
 
 					# Split the sub name from the rest of the subject...
 					sub = msg.subject.split('::')[1].split(' ')
-					subRun = None
+					sub_run = None
 					for i in sub:
-						if subRun == None and i != '':
-							subRun = i
+						if sub_run == None and i != '':
+							sub_run = i
 
 					# Run the action
-					self.runActions[actionForSub[0]](subRun.upper(), msg)
+					self.run_actions[action_for_subreddit[0]](sub_run.upper(), msg)
 					
 				except KeyError:
 
@@ -131,13 +129,13 @@ class PostNotifier:
 					print('\tInvalid action :: Replying to user and aborting thread')
 					try:
 						msg.reply(responses.INVALIDMESSAGETOBOT)
-					except self.userDoesntExist as e:
+					except self.user_doesnt_exist as e:
 						pass
 
 		# We have now gone through all of the messages in the inbox
 		# Huzzah
 
-	def addToMailingList(self, subreddit:str, msg:praw.models.Message):
+	def add_to_mailing_list(self, subreddit:str, msg:praw.models.Message):
 		'''
 		Adds a user to a mailing list for any given subreddit
 		This shouldn't require authentication nor checking if a subreddit exists, so that's nice
@@ -179,10 +177,10 @@ class PostNotifier:
 		print('\t\tResponding to user')
 		try:
 			msg.reply(responses.ADDEDTOMAILINGLIST.format(subreddit))
-		except self.userDoesntExist as e:
+		except self.user_doesnt_exist as e:
 			pass
 
-		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
+		z = self.post_to_webhook(subreddit, embeds=[{'fields':[
 				{
 					'name': 'User Added To {}'.format(subreddit),
 					'value': msg.author.name,
@@ -190,7 +188,7 @@ class PostNotifier:
 				}
 			]}])
 
-	def removeFromMailingList(self, subreddit:str, msg:praw.models.Message):
+	def remove_from_mailing_list(self, subreddit:str, msg:praw.models.Message):
 		'''
 		Removes a user to a mailing list for any given subreddit
 		This should check if the file is there so it doesn't run into any errors
@@ -245,10 +243,10 @@ class PostNotifier:
 		print('\t\tResponding to user')
 		try:
 			msg.reply(responses.REMOVEDFROMMAILINGLIST.format(subreddit))
-		except self.userDoesntExist as e:
+		except self.user_doesnt_exist as e:
 			pass
 
-		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
+		z = self.post_to_webhook(subreddit, embeds=[{'fields':[
 				{
 					'name': 'User Removed From {}'.format(subreddit),
 					'value': msg.author.name,
@@ -256,7 +254,7 @@ class PostNotifier:
 				}
 			]}])
 
-	def sendToMailingList(self, subreddit:str, msg:praw.models.Message):
+	def send_to_mailing_list(self, subreddit:str, msg:praw.models.Message):
 		'''
 		This is the first command that requires authentication
 		The bot will check if the message was sent by a moderator of the mentioned subreddit, 
@@ -279,16 +277,16 @@ class PostNotifier:
 
 		# Get the server moderators
 		print('\t\tGenerating list of moderators for the subreddit')
-		moderatorNames = self.getModerators(subreddit)
+		moderator_names = self.getModerators(subreddit)
 
 		# See if the user is in the moderator list
-		if author not in moderatorNames:
+		if author not in moderator_names:
 
 			# They are not a moderator
 			print('\t\tUser not a moderator - responding and aborting')
 			try:
 				msg.reply(responses.NOTALLOWEDTOSEND.format(subreddit))
-			except self.userDoesntExist as e:
+			except self.user_doesnt_exist as e:
 				pass
 			return
 
@@ -313,23 +311,23 @@ class PostNotifier:
 			with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
 
 		# Get the format ready for the messages - get subject
-		subjectMsg = msg.subject[len(msg.subject.split('::')[0]) + len(subreddit) + 2:]
+		subject_message = msg.subject[len(msg.subject.split('::')[0]) + len(subreddit) + 2:]
 		while True:
 			try:
-				if subjectMsg[0] == ' ':
-					subjectMsg = subjectMsg[1:]
+				if subject_message[0] == ' ':
+					subject_message = subject_message[1:]
 				else:
 					break
 			except IndexError:
-				subjectMsg = 'None'
-		subject = 'UPDATE FROM {} :: {}'.format(subreddit.upper(), subjectMsg)
+				subject_message = 'None'
+		subject = 'UPDATE FROM {} :: {}'.format(subreddit.upper(), subject_message)
 
 		# Get body text
 		body = msg.body
 
 		# Send the messages
 		counter = {'Success':0,'Deleted User':0,'Tries':0}
-		userRemovals = []
+		user_removals = []
 		print('\t\tSending out to users now ->')
 		for person in data['Users']:
 			counter['Tries'] += 1
@@ -337,21 +335,21 @@ class PostNotifier:
 			try:
 				self.reddit.redditor(person).message(subject, body + responses.BOTDISCLAIMERMESSAGE + ' ^^:: ^^[Messenger](/u/{})'.format(author))
 				counter['Success'] += 1
-			except self.userDoesntExist as e:
-				userRemovals.append(person)
+			except self.user_doesnt_exist as e:
+				user_removals.append(person)
 				counter['Deleted User'] += 1
 
 		# Users have ceased to exist - remove them from the list
-		if userRemovals:
+		if user_removals:
 			x = data['Users']
-			for i in userRemovals:
+			for i in user_removals:
 				x.remove(i)
 			data['Users'] = x
 			with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
 
 		print('\t\tFinished sending out messages to {} user(s)'.format(counter))
 
-		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'title':'Message Sent From {}'.format(subreddit), 'fields':[
+		z = self.post_to_webhook(subreddit, embeds=[{'title':'Message Sent From {}'.format(subreddit), 'fields':[
 				{
 					'name': 'Successful Message Sends', 
 					'value': counter['Success'],
@@ -377,7 +375,7 @@ class PostNotifier:
 				}]}]
 			)
 
-	def setDiscordWebhookForSubreddit(self, subreddit:str, msg:praw.models.Message):
+	def set_webhook_for_subreddit(self, subreddit:str, msg:praw.models.Message):
 		'''
 		The bot will check if the message was sent by a moderator of the mentioned subreddit, 
 		and if it was it will store a given webhook from the body.
@@ -398,16 +396,16 @@ class PostNotifier:
 
 		# Get the server moderators
 		print('\t\tGenerating list of moderators for the subreddit')
-		moderatorNames = self.getModerators(subreddit)
+		moderator_names = self.getModerators(subreddit)
 
 		# See if the user is in the moderator list
-		if author not in moderatorNames:
+		if author not in moderator_names:
 
 			# They are not a moderator
 			print('\t\tUser not a moderator - responding and aborting')
 			try:
 				msg.reply(responses.NOTALLOWEDTOSEND.format(subreddit))
-			except self.userDoesntExist as e:
+			except self.user_doesnt_exist as e:
 				pass
 			return
 
@@ -437,7 +435,7 @@ class PostNotifier:
 		with open(self.locate(subreddit), 'w') as a: a.write(dumps(data, indent=4))
 
 		# Ping the webhook
-		z = self.postToDiscordViaWebhook(subreddit, embeds=[{'fields':[
+		z = self.post_to_webhook(subreddit, embeds=[{'fields':[
 				{
 					'name':'Webhook Setup Ping for {}'.format(subreddit), 
 					'value':'This is the ping to make sure that the given webhook works properly.', 
@@ -450,13 +448,13 @@ class PostNotifier:
 		msg.reply(responses.DISCORDWEBHOOKMESSAGE.format(subreddit))
 
 	def getModerators(self, subreddit:str):
-		subredditObj = self.reddit.subreddit(subreddit)
-		subredditModObj = subredditObj.moderator
-		moderatorList = list(subredditModObj)
-		moderatorNames = [i.name for i in moderatorList] + self.ownerNames
-		return moderatorNames
+		subreddit_object = self.reddit.subreddit(subreddit)
+		subreddit_moderators = subreddit_object.moderator
+		moderator_list = list(subreddit_moderators)
+		moderator_names = [i.name for i in moderator_list] + self.owner_names
+		return moderator_names
 
-	def postToDiscordViaWebhook(self, subreddit:str, **kwargs):
+	def post_to_webhook(self, subreddit:str, **kwargs):
 		'''
 		Posts a webhook to a subreddit, from a given link inside the stored data
 		Formats all inputs into an embed and posts it to the link
@@ -521,5 +519,5 @@ class PostNotifier:
 			print('\t\t{}'.format(z.text))
 		return z
 
-	def postAComment(self, parentComment:str, msg:praw.models.Message):
+	def post_a_comment(self, parentComment:str, msg:praw.models.Message):
 		pass
