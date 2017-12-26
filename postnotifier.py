@@ -77,6 +77,9 @@ class PostNotifier:
 				print('Sleeping for {} due to timeout'.format(timeout_delay))
 				print('\t{}'.format(e))
 				sleep(timeout_delay)
+			except KeyboardInterrupt as e:
+				print('Shutting down...')
+				return
 
 	def check_inbox(self):
 		'''
@@ -469,21 +472,25 @@ class PostNotifier:
 
 		print('\t\tGenerating webhook to be sent')
 
+		# Get the arguments
 		content = kwargs.get('content', None)
 		username = kwargs.get('username', 'PostNotifier')
 		footer = kwargs.get('footer', 'PostNotifier on /u/magicSquib created by /u/SatanistSnowflake')
 		embeds = kwargs.get('embeds', None)
 
+		# Determine the username on the webhook
 		try:
 			out = {'username': username.name}
 		except Exception:
 			out = {'username': str(username)}
 
+		# Determine the webhook's content
 		if content == None:
 			pass
 		else:
 			out['content'] = content
 
+		# Determine the embeds
 		if embeds == None:
 			pass
 		else:
