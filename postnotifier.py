@@ -105,7 +105,6 @@ class PostNotifier:
 
 			# Print out to console
 			print('New message ->\n\tAuthor :: {0.author}\n\tSubject :: {0.subject}'.format(msg))
-			print('\tMarking as read...')
 
 			# Check that the message is in a valid format
 			# post::askreddit asda -> [post, askredditasda]
@@ -143,6 +142,9 @@ class PostNotifier:
 						msg.reply(INVALIDMESSAGETOBOT)
 					except self.user_doesnt_exist as e:
 						pass
+
+			print('\tMarking as read\n')
+			msg.mark_read()
 
 
 	def add_to_mailing_list(self, subreddit:str, msg:praw.models.Message):
