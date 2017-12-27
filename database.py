@@ -81,18 +81,18 @@ class Database(object):
 		# Query the database
 		with self as db:
 			usernames = db('SELECT username FROM users WHERE subreddit=%s', subreddit)
-			webhook = db('SELECT webhook FROM webhooks WHERE subreddit=%s', subreddit)
+			# webhook = db('SELECT webhook FROM webhooks WHERE subreddit=%s', subreddit)
 
 		# Sort into usable formats
 		username_list = []
 		for username in usernames:
-			username_list.append(username)
-		webhook_url = None
-		for link in webhook:
-			webhook_url = link
+			username_list.append(username[0])
+		# webhook_url = None
+		# for link in webhook:
+		# 	webhook_url = link
 
 		# Return to user
 		return {
 			'Users': username_list,
-			'Discord Webhook': webhook_url
+			# 'Discord Webhook': webhook_url
 		}
