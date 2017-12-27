@@ -200,7 +200,7 @@ class PostNotifier:
 		with self.database as db:
 			results = db('SELECT * FROM users WHERE subreddit=%s AND username=%s', subreddit, msg.author.name)
 			if results:
-				db('DELETE FROM users WHERE subreddit=%s AND username=%s)', subreddit, msg.author.name)
+				db('DELETE FROM users WHERE subreddit=%s AND username=%s', subreddit, msg.author.name)
 			else:
 				print('\t\tUser not signed up - passing')
 
@@ -255,14 +255,14 @@ class PostNotifier:
 		data = self.database.get_subreddit(subreddit)
 
 		# Make sure that the message author is in them
-		if author not in data['Users']:
+		if author.name not in data['Users']:
 			print('\t\tAdding author to user list')
 			data['Users'] = [author] + data['Users']
 			with self.database as db:
 				db('INSERT INTO users (subreddit, username) VALUES (%s, %s)', subreddit, author.name)
 
 		# Get the format ready for the messages - get subject
-		subject_message = msg.subject.split('::', 1)[1].strip().split(' ')[1:]
+		subject_message = ' '.join(msg.subject.split('::', 1)[1].strip().split(' ')[1:])
 		if subject_message:
 			subject = 'Update from {} :: {}'.format(subreddit.upper(), subject_message)
 		else:
