@@ -19,9 +19,9 @@ Have a nice day! c:''' + BOTDISCLAIMERMESSAGE
 
 # Message to be sent with you're added to a mailing list
 # Formats :: subreddit name
-ADDEDTOMAILINGLIST = '''You have successfully been added to the mailing list for the server **{}**!
+ADDEDTOMAILINGLIST = '''You have successfully been added to the mailing list for the subreddit **{}**!
 
-It should be noted that just because you've been added, it doesn't mean that you've set up the message properly, or that you'll  ever recieve any messages.
+It should be noted that just because you've been added, it doesn't mean that you'll ever recieve any messages.
 
 Regardless, I hope that everything was a pleasant experience for you!''' + BOTDISCLAIMERMESSAGE
 
